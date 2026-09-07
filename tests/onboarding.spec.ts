@@ -44,10 +44,10 @@ test('returns to the calling website after all nine lessons', async ({ page }) =
 
   await page.getByRole('button', { name: /2 replies/i }).click()
   await page.getByPlaceholder('Reply to Nova…').fill('A different note for every star would be lovely!')
-  await page.locator('.thread-composer button').click()
+  await page.locator('.thread-composer .send-button').click()
   await page.getByRole('button', { name: /next mission/i }).click()
 
-  await page.locator('.message-tools button').first().click()
+  await page.getByRole('button', { name: /add a ⭐ reaction/i }).click()
   await page.getByRole('button', { name: /next mission/i }).click()
 
   await page.getByRole('button', { name: /search hack club/i }).click()
@@ -66,7 +66,7 @@ test('returns to the calling website after all nine lessons', async ({ page }) =
       sessionStorage.setItem('completion-message', JSON.stringify((event as CustomEvent).detail))
     }, { once: true })
   })
-  await expect(page.getByText('Step 9 of 10')).toBeVisible()
+  await expect(page.getByLabel('Step 9 of 10')).toBeVisible()
   await page.getByRole('button', { name: /report it to @shroud and finish/i }).click()
   await page.getByRole('button', { name: /complete onboarding/i }).click()
   await expect(page.getByRole('heading', { name: /congrats.*you’ve learned slack/i })).toBeVisible()
@@ -112,7 +112,7 @@ test('guides a mobile user into Christian’s DMs', async ({ page }) => {
 
 test('loads the general Hack Club Slack preset', async ({ page }) => {
   await page.goto('/program/slack')
-  await expect(page.getByText('Welcome to Hack Club', { exact: true })).toBeVisible()
+  await expect(page).toHaveTitle(/^Hack Club · /)
   await expect(page.getByRole('heading', { name: /welcome to #lounge/i })).toBeVisible()
   await expect(page.getByRole('button', { name: 'announcements', exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'news-wire', exact: true })).toBeVisible()
