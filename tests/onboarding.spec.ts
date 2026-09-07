@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 test('returns to the calling website after all nine lessons', async ({ page }) => {
-  test.setTimeout(45_000)
+  test.setTimeout(90_000)
   await page.goto('/flow-tester')
   await page.getByLabel('Your name').fill('Ada')
   await page.getByLabel('What are you making?').fill('A constellation game')

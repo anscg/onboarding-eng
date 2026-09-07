@@ -345,7 +345,8 @@ function App() {
   const [theme, setTheme] = useState<Theme>(readStoredTheme)
   const composerRef = useRef<HTMLInputElement>(null)
   const messageListRef = useRef<HTMLDivElement>(null)
-  const messageCountRef = useRef(0)
+  const messageScrollRef = useRef<{ conversation: string; count: number } | null>(null)
+  const messageScrollInitializedRef = useRef(false)
 
   const isDark = theme === 'dark'
 
@@ -452,7 +453,7 @@ function App() {
   } : null
   const isActiveComplete = activeLesson ? completed.includes(activeLesson) : false
   // Nothing is a spotlight target until the reader has started the tour.
-  const targetLesson = introComplete ? activeLesson : null
+  const targetLesson = introComplete && !isActiveComplete ? activeLesson : null
   const allLessonsComplete = config ? completed.length === lessons.length : false
   const allComplete = finished && allLessonsComplete
   const guideProgress = lessons.length ? Math.round(((lessonIndex + 1) / (lessons.length + 1)) * 100) : 0
@@ -662,14 +663,21 @@ function App() {
     }
   }, [notificationsOpen])
 
-  // Sending pins the reader to the newest message; switching conversations does not
-  // yank the view, so the count has to grow for this to fire.
+  // Pin the initial conversation and newly sent messages to the bottom. A different
+  // conversation can contain more messages, so compare counts only within the same
+  // channel or DM instead of treating that larger count as a newly received message.
   useEffect(() => {
     const list = messageListRef.current
     const count = visibleMessages.length
-    if (list && count > messageCountRef.current) list.scrollTop = list.scrollHeight
-    messageCountRef.current = count
-  }, [visibleMessages])
+    const conversation = directMessage ? `dm:${directMessage}` : `channel:${channel}`
+    const previous = messageScrollRef.current
+    const isInitialMount = !messageScrollInitializedRef.current && count > 0
+    if (list && (isInitialMount || previous?.conversation === conversation && count > previous.count)) {
+      list.scrollTop = list.scrollHeight
+    }
+    if (count > 0) messageScrollInitializedRef.current = true
+    messageScrollRef.current = { conversation, count }
+  }, [channel, directMessage, visibleMessages])
 
   const addReaction = (id: number) => {
     setMessages((current) => current.map((item) => item.id === id ? { ...item, reactions: (item.reactions ?? 0) + 1 } : item))
